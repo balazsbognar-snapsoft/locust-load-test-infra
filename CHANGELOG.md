@@ -1,3 +1,10 @@
+## [1.0.1](https://github.com/balazsbognar-snapsoft/locust-load-test-infra/compare/v1.0.0...v1.0.1) (2026-02-13)
+
+### 🛠 Bug Fixes 🛠
+
+* fix workflow trigger rules ([30d55dc](https://github.com/balazsbognar-snapsoft/locust-load-test-infra/commit/30d55dc4c4dba5e0a6bce43704c39c43fffa0d49))
+* use pyproject.toml and fix to trigger push ([046dbfd](https://github.com/balazsbognar-snapsoft/locust-load-test-infra/commit/046dbfd5b9fc56662c5326405d6b49cb36c7e0ac))
+
 ## 1.0.0 (2026-02-13)
 
 ### 🚀 Features 🚀
