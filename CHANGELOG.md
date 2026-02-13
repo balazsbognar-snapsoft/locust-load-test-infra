@@ -1,3 +1,9 @@
+## [1.0.3](https://github.com/balazsbognar-snapsoft/locust-load-test-infra/compare/v1.0.2...v1.0.3) (2026-02-13)
+
+### 🛠 Bug Fixes 🛠
+
+* correct Dockerfile ([d43fc37](https://github.com/balazsbognar-snapsoft/locust-load-test-infra/commit/d43fc37d42e2ef5c233d6c0068c922b1d0b1e474))
+
 ## [1.0.2](https://github.com/balazsbognar-snapsoft/locust-load-test-infra/compare/v1.0.1...v1.0.2) (2026-02-13)
 
 ### 🛠 Bug Fixes 🛠
