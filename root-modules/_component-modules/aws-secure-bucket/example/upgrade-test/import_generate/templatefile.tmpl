@@ -1,0 +1,56 @@
+
+%{~ for key, value in buckets ~}
+
+import {
+  to = ${value.module_base_path}.aws_s3_bucket_lifecycle_configuration.content["auto_archive"]
+  id = "${value.bucket_name}"
+}
+import {
+  to = ${value.module_base_path}.aws_s3_bucket_lifecycle_configuration.access_log["auto_archive"]
+  id = "${value.access_bucket_name}"
+}
+import {
+  to = ${value.module_base_path}.aws_s3_bucket_acl.access_log[0]
+  id = "${value.access_bucket_name},log-delivery-write"
+}
+import {
+  to = ${value.module_base_path}.aws_s3_bucket_server_side_encryption_configuration.access_log
+  id = "${value.access_bucket_name}"
+}
+import {
+  to = ${value.module_base_path}.aws_s3_bucket_logging.content
+  id = "${value.bucket_name}"
+}
+import {
+  to = ${value.module_base_path}.aws_s3_bucket_versioning.content
+  id = "${value.bucket_name}"
+}
+
+%{~ if value.sse_algorithm == "AES256" ~}
+import {
+  to = ${value.module_base_path}.aws_s3_bucket_server_side_encryption_configuration.content_aes["sse_algorithm"]
+  id = "${value.bucket_name}"
+}
+%{~ endif ~}
+%{~ if value.sse_algorithm == "aws:kms" && value.kms_key == null ~}
+import {
+  to = ${value.module_base_path}.aws_s3_bucket_server_side_encryption_configuration.content_kms_awskey["sse_algorithm"]
+  id = "${value.bucket_name}"
+}
+%{~ endif ~}
+%{~ if value.sse_algorithm == "aws:kms" && value.kms_key != null ~}
+import {
+  to = ${value.module_base_path}.aws_s3_bucket_server_side_encryption_configuration.content_kms_masterkey["sse_algorithm"]
+  id = "${value.bucket_name}"
+}
+%{~ endif ~}
+
+%{~ if value.object_lock_enabled ~}
+
+import {
+  to = ${value.module_base_path}.aws_s3_bucket_object_lock_configuration.content_years["enabled"]
+  id =  "${value.bucket_name}"
+}
+%{~ endif ~}
+
+%{~ endfor ~}

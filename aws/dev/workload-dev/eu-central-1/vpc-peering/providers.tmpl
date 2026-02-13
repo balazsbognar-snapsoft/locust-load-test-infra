@@ -1,0 +1,41 @@
+# ---------------------------------------------------------
+# 1. Master / Requester Provider (Default)
+# ---------------------------------------------------------
+provider "aws" {
+  region = "${region}"
+  alias = "default"
+
+  %{ if role_arn != "" }
+  assume_role {
+    role_arn = "${role_arn}"
+  }
+  %{ endif }
+
+  default_tags {
+    tags = {
+      Source     = "${default_tags}"
+    }
+  }
+
+}
+
+# ---------------------------------------------------------
+# 2. Secondary / Accepter Provider (Alias: "peer")
+# ---------------------------------------------------------
+provider "aws" {
+  region = "${peer_region}"
+  alias  = "peer"
+
+  %{ if role_arn != "" }
+  assume_role {
+    role_arn = "${role_arn}"
+  }
+
+  %{ endif }
+
+  default_tags {
+    tags = {
+      Source     = "${default_tags}"
+    }
+  }
+}

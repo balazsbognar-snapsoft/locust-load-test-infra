@@ -1,0 +1,44 @@
+branches:
+  - main
+  - name: beta
+    prerelease: true
+  - name: alpha
+    prerelease: true
+  - name: chore/refactor-infra-code
+    prerelease: "infra-test"
+ci: true
+debug: false
+dryRun: false
+tagFormat: 'v${version}'
+plugins:
+  - - "@semantic-release/commit-analyzer"
+  - - "@semantic-release/release-notes-generator"
+    - preset: conventionalcommits
+      presetConfig:
+        types:
+          - type: feat
+            section: "🚀 Features 🚀"
+            hidden: false
+          - type: fix
+            section: "🛠 Bug Fixes 🛠"
+            hidden: false
+          - type: perf
+            section: "⚡️ Performance Improvements ⚡️"
+            hidden: false
+          - type: revert
+            section: "⏮️️ Reverts ⏮️️"
+            hidden: false
+          - type: build
+            section: "⚙️ Build ⚙️"
+            hidden: false
+          - type: test
+            section: "🧪 test 🧪️"
+            hidden: false
+  - '@semantic-release/changelog'
+  - - '@semantic-release/git'
+    - assets:
+        - CHANGELOG.md
+      message: |-
+        chore(release): v${nextRelease.version}
+
+        ${nextRelease.notes}

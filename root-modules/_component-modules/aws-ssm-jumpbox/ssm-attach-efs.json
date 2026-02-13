@@ -1,0 +1,35 @@
+{
+  "schemaVersion": "2.2",
+  "description": "Attach an Amazon Elastic File System mount to an EC2 instance.",
+  "parameters": {
+    "mountPath": {
+      "type": "String",
+      "description": "OS path of the storage.",
+      "allowedPattern": "^(/[^/ ]*)+/?$"
+    },
+    "accessPointId": {
+      "type": "String",
+      "description": "Identifier of the entry points into the EFS file system.",
+      "allowedPattern": "fsap-([a-z0-9]){1,25}"
+    },
+    "fileSystemId": {
+      "type": "String",
+      "description": "Identifier of the EFS file system.",
+      "allowedPattern": "fs-([a-z0-9]){1,25}"
+    }
+  },
+  "mainSteps": [
+    {
+      "action": "aws:runShellScript",
+      "name": "attach_nfs",
+      "inputs": {
+        "runCommand": [
+          "sudo yum install -y amazon-efs-utils",
+          "sudo mkdir {{mountPath}}",
+          "sudo mount -t efs -o tls,accesspoint={{accessPointId}} {{fileSystemId}} {{mountPath}}"
+        ],
+        "timeoutSeconds": "60"
+      }
+    }
+  ]
+}

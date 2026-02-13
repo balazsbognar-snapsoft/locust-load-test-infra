@@ -1,0 +1,16 @@
+name: Docker Build and Push to ECR
+
+on:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  build-and-push:
+    uses: ./.github/workflows/docker-build.yaml
+    with:
+      push_image: true
+      image_version: ${{ github.ref_name }}
+    permissions:
+      contents: read
+      id-token: write

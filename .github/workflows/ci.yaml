@@ -1,0 +1,51 @@
+name: CI
+
+on:
+  push:
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Check releaserc file
+        run: |
+          set -euo pipefail
+          for ext in .yaml .yml .json .js .cjs .mjs ""; do
+            if [ -z "$ext" ]; then file=".releaserc"; else file=".releaserc$ext"; fi
+            if [ -f "$file" ]; then echo "Found $file"; exit 0; fi
+          done
+          echo "No .releaserc file found!"
+          exit 1
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: |
+          npm install
+          npm cache clean --force
+
+      - name: Semantic Release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: npx semantic-release
+
+  build:
+    needs: release
+    uses: ./.github/workflows/docker-build.yaml
+    with:
+      push_image: false
+    permissions:
+      contents: read
