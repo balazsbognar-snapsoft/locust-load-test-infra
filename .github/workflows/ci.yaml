@@ -8,18 +8,34 @@ on:
       - "**"
 
 jobs:
+  build:
+    if: github.actor != 'locust-load-test-infra[bot]'
+    uses: ./.github/workflows/docker-build.yaml
+    with:
+      push_image: false
+    permissions:
+      contents: read
+
   release:
-    if: github.actor != 'semantic-release-bot'
+    if: github.actor != 'locust-load-test-infra[bot]'
+    needs: build
     runs-on: ubuntu-latest
     permissions:
       contents: write
 
     steps:
+      - name: Generate GitHub App Token
+        id: app-token
+        uses: actions/create-github-app-token@v2
+        with:
+          app-id: ${{ secrets.APP_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+
       - name: Checkout
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ steps.app-token.outputs.token }}
 
       - name: Check releaserc file
         run: |
@@ -44,14 +60,5 @@ jobs:
 
       - name: Semantic Release
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
         run: npx semantic-release
-
-  build:
-    if: github.actor != 'semantic-release-bot'
-    needs: release
-    uses: ./.github/workflows/docker-build.yaml
-    with:
-      push_image: false
-    permissions:
-      contents: read
