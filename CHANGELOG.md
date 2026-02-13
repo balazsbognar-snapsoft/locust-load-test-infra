@@ -1,3 +1,9 @@
+## [1.0.4](https://github.com/balazsbognar-snapsoft/locust-load-test-infra/compare/v1.0.3...v1.0.4) (2026-02-13)
+
+### 🛠 Bug Fixes 🛠
+
+* trigger a new build ([4b80300](https://github.com/balazsbognar-snapsoft/locust-load-test-infra/commit/4b80300af3a8587c7ed275f32519c26dc796e22d))
+
 ## [1.0.3](https://github.com/balazsbognar-snapsoft/locust-load-test-infra/compare/v1.0.2...v1.0.3) (2026-02-13)
 
 ### 🛠 Bug Fixes 🛠
