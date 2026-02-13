@@ -2,9 +2,12 @@ name: CI
 
 on:
   push:
+    tags-ignore:
+      - "**"
 
 jobs:
   release:
+    if: github.actor != 'semantic-release-bot'
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -14,7 +17,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.RELEASE_TOKEN }}
 
       - name: Check releaserc file
         run: |
@@ -39,10 +42,11 @@ jobs:
 
       - name: Semantic Release
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
         run: npx semantic-release
 
   build:
+    if: github.actor != 'semantic-release-bot'
     needs: release
     uses: ./.github/workflows/docker-build.yaml
     with:

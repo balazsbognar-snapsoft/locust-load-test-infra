@@ -1,0 +1,7 @@
+[project]
+name = "locust-load-test"
+description = "Locust load testing infrastructure"
+requires-python = ">=3.13"
+dependencies = [
+    "locust==2.43.3",
+]
