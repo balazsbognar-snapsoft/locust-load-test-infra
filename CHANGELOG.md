@@ -1,3 +1,9 @@
+## [1.0.5](https://github.com/balazsbognar-snapsoft/locust-load-test-infra/compare/v1.0.4...v1.0.5) (2026-02-13)
+
+### 🛠 Bug Fixes 🛠
+
+* correct ECR repository name ([bed060d](https://github.com/balazsbognar-snapsoft/locust-load-test-infra/commit/bed060d6e091b54f1b327bcafd6aa3630d4d2589))
+
 ## [1.0.4](https://github.com/balazsbognar-snapsoft/locust-load-test-infra/compare/v1.0.3...v1.0.4) (2026-02-13)
 
 ### 🛠 Bug Fixes 🛠
