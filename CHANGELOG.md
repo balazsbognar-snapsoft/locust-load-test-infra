@@ -1,3 +1,9 @@
+## [1.0.2](https://github.com/balazsbognar-snapsoft/locust-load-test-infra/compare/v1.0.1...v1.0.2) (2026-02-13)
+
+### 🛠 Bug Fixes 🛠
+
+* correct uv tool install ([f6b4d77](https://github.com/balazsbognar-snapsoft/locust-load-test-infra/commit/f6b4d776b8d61e83fc7f854fd7e03c9d4b047558))
+
 ## [1.0.1](https://github.com/balazsbognar-snapsoft/locust-load-test-infra/compare/v1.0.0...v1.0.1) (2026-02-13)
 
 ### 🛠 Bug Fixes 🛠
