@@ -55,6 +55,22 @@ jobs:
             echo "version=${{ github.sha }}" >> $GITHUB_OUTPUT
           fi
 
+      - name: Set image tags
+        id: tags
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          if [ "${{ inputs.push_image }}" = "true" ]; then
+            ECR_URI="${{ steps.login-ecr.outputs.registry }}/${{ env.AWS_ECR_REPOSITORY }}"
+            echo "tags<<EOF" >> $GITHUB_OUTPUT
+            echo "$ECR_URI:$VERSION" >> $GITHUB_OUTPUT
+            echo "$ECR_URI:latest" >> $GITHUB_OUTPUT
+            echo "EOF" >> $GITHUB_OUTPUT
+          else
+            echo "tags<<EOF" >> $GITHUB_OUTPUT
+            echo "${{ env.AWS_ECR_REPOSITORY }}:$VERSION" >> $GITHUB_OUTPUT
+            echo "EOF" >> $GITHUB_OUTPUT
+          fi
+
       - name: Build and push Docker image
         uses: docker/build-push-action@v6
         with:
@@ -62,6 +78,6 @@ jobs:
           file: Dockerfile
           platforms: ${{ inputs.push_image && 'linux/amd64,linux/arm64' || 'linux/amd64' }}
           push: ${{ inputs.push_image }}
-          tags: ${{ inputs.push_image && format('{0}/{1}:{2}\n{0}/{1}:latest', steps.login-ecr.outputs.registry, env.AWS_ECR_REPOSITORY, steps.version.outputs.version) || format('{0}:{1}', env.AWS_ECR_REPOSITORY, steps.version.outputs.version) }}
+          tags: ${{ steps.tags.outputs.tags }}
           build-args: |
             PYTHON_VERSION=${{ env.PYTHON_VERSION }}
