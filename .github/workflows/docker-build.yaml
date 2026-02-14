@@ -22,17 +22,13 @@ env:
 jobs:
   docker-build:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        platform:
-          - linux/amd64
-          - linux/arm64
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
       - name: Set up QEMU
+        if: ${{ inputs.push_image }}
         uses: docker/setup-qemu-action@v3
 
       - name: Set up Docker Buildx
@@ -59,73 +55,13 @@ jobs:
             echo "version=${{ github.sha }}" >> $GITHUB_OUTPUT
           fi
 
-      - name: Prepare platform suffix
-        id: platform
-        run: |
-          PLATFORM="${{ matrix.platform }}"
-          SUFFIX="${PLATFORM//\//-}"
-          echo "suffix=$SUFFIX" >> $GITHUB_OUTPUT
-
-      - name: Set image tag
-        id: tag
-        run: |
-          VERSION=${{ steps.version.outputs.version }}
-          SUFFIX=${{ steps.platform.outputs.suffix }}
-          if [ "${{ inputs.push_image }}" = "true" ]; then
-            ECR_URI=${{ steps.login-ecr.outputs.registry }}/${{ env.AWS_ECR_REPOSITORY }}
-            echo "image_tag=$ECR_URI:$VERSION-$SUFFIX" >> $GITHUB_OUTPUT
-          else
-            echo "image_tag=${{ env.AWS_ECR_REPOSITORY }}:$VERSION-$SUFFIX" >> $GITHUB_OUTPUT
-          fi
-
-      - name: Build Docker image
+      - name: Build and push Docker image
         uses: docker/build-push-action@v6
         with:
           context: .
           file: Dockerfile
-          platforms: ${{ matrix.platform }}
+          platforms: ${{ inputs.push_image && 'linux/amd64,linux/arm64' || 'linux/amd64' }}
           push: ${{ inputs.push_image }}
-          tags: ${{ steps.tag.outputs.image_tag }}
+          tags: ${{ inputs.push_image && format('{0}/{1}:{2}\n{0}/{1}:latest', steps.login-ecr.outputs.registry, env.AWS_ECR_REPOSITORY, steps.version.outputs.version) || format('{0}:{1}', env.AWS_ECR_REPOSITORY, steps.version.outputs.version) }}
           build-args: |
             PYTHON_VERSION=${{ env.PYTHON_VERSION }}
-
-  manifest:
-    if: ${{ inputs.push_image }}
-    needs: docker-build
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          role-to-assume: ${{ env.AWS_ROLE_TO_ASSUME }}
-          aws-region: ${{ env.AWS_REGION }}
-
-      - name: Login to Amazon ECR
-        id: login-ecr
-        uses: aws-actions/amazon-ecr-login@v2
-
-      - name: Set image version
-        id: version
-        run: |
-          if [ -n "${{ inputs.image_version }}" ]; then
-            echo "version=${{ inputs.image_version }}" >> $GITHUB_OUTPUT
-          else
-            echo "version=${{ github.sha }}" >> $GITHUB_OUTPUT
-          fi
-
-      - name: Create and push multi-arch manifest
-        run: |
-          ECR_URI=${{ steps.login-ecr.outputs.registry }}/${{ env.AWS_ECR_REPOSITORY }}
-          VERSION=${{ steps.version.outputs.version }}
-
-          docker manifest create $ECR_URI:$VERSION \
-            $ECR_URI:$VERSION-linux-amd64 \
-            $ECR_URI:$VERSION-linux-arm64
-
-          docker manifest create $ECR_URI:latest \
-            $ECR_URI:$VERSION-linux-amd64 \
-            $ECR_URI:$VERSION-linux-arm64
-
-          docker manifest push $ECR_URI:$VERSION
-          docker manifest push $ECR_URI:latest
