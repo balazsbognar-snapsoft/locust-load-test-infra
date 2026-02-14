@@ -55,6 +55,7 @@ resource "aws_instance" "this" {
 
   tags = merge(
     module.label_ec2_instance.tags,
+    var.additional_tags,
     var.network_tester_instance_enabled ? {
       Network_tester_enabled = true
     } : {}
@@ -65,7 +66,7 @@ resource "aws_instance" "this" {
 
 module "endpoints" {
   count  = var.add_interface_endpoints || var.add_gateway_endpoints ? 1 : 0
-  source = "../aws-ssm-endpoints"
+  source = "../aws-ssm-endpoints"t
 
   region                                   = var.region
   organization_id                          = var.organization_id

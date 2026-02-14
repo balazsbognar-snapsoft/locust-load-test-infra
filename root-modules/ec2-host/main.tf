@@ -29,9 +29,12 @@ module "ec2-instance" {
 
   iam_instance_profile_name = var.iam_instance_profile_name
 
+  instance_custom_policies = var.instance_custom_policies
+
   instance_type = var.instance_type
 
   user_data = var.user_data
 
+  additional_tags = var.additional_tags
 }
 

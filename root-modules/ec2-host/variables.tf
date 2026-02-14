@@ -87,6 +87,12 @@ variable "root_block_device_volume_size" {
   default     = 20
 }
 
+variable "additional_tags" {
+  description = "Additional tags to add to the EC2 instance"
+  type        = map(string)
+  default     = {}
+}
+
 ################################################################################
 # Security Group
 ################################################################################

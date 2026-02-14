@@ -339,3 +339,9 @@ variable "security_group_egress_rules" {
   }))
   default = null
 }
+
+variable "additional_tags" {
+  description = "Additional tags to add to the security group created"
+  type        = map(string)
+  default     = {}
+}

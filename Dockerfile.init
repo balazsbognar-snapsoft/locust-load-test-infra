@@ -1,6 +1,6 @@
 FROM alpine:3.23.3
 
-ARG ORAS_CLI_VERSION
+ARG ORAS_CLI_VERSION=1.3.0
 # Automatic arguments from buildx
 ARG TARGETOS
 ARG TARGETARCH

@@ -34,13 +34,28 @@ inputs = {
   instance_custom_policies = []
 
   security_group_egress_rules = {
-    allow_to_master = {
+    allow_to_vpc   = {
+
       from_port   = 5557
       to_port     = 5557
       ip_protocol = "tcp"
-      cidr_ipv4   = "10.0.32.0/20"
+      cidr_ipv4   = "10.0.0.0/8"
     }
   }
+
+    additional_tags = {
+    Role = "locust-worker"
+    Application = "locust"
+  }
+
+  instance_custom_policies = [
+    {
+      sid = "AllowECRAuthTokenAccess"
+      effect = "Allow"
+      actions = ["ecr:GetAuthorizationToken"]
+      resources = ["*"]
+    }
+  ]
 
   user_data = <<-EOL
   #!/bin/bash -xe
@@ -70,49 +85,38 @@ inputs = {
 
   sudo mkdir -p /root/locust && cd /root/locust
 
-  sudo tee /root/locust/locustfile.py <<EOF
-  from locust import HttpUser, task, between
-  from locust.exception import StopUser
-
-  class GoogleUser(HttpUser):
-      # Várakozási idő a kérések között (pl. 1 és 3 másodperc között véletlenszerűen)
-      wait_time = between(1, 3)
-
-      # Alapértelmezett host (ezt parancssorból is felülírhatod)
-      host = "https://www.google.com"
-
-      # Számláló inicializálása
-      request_count = 0
-
-      @task
-      def load_homepage(self):
-          # Ellenőrizzük, elértük-e a limitet
-          if self.request_count >= 3:
-              # Ha megvolt a 3, leállítjuk ezt a felhasználót
-              raise StopUser()
-
-          # A tényleges kérés
-          with self.client.get("/", catch_response=True) as response:
-              if response.status_code == 200:
-                  response.success()
-              else:
-                  response.failure(f"Hiba: {response.status_code}")
-
-          # Növeljük a számlálót
-          self.request_count += 1
-          print(f"Kérés elküldve: {self.request_count}. alkalom")
-  EOF
-
   sudo tee /root/locust/docker-compose.yaml <<EOF
   services:
-    worker:
-      image: locustio/locust
-      restart: unless-stopped
-      deploy:
-        replicas: 2
+    init-downloader:
+      image: 563149050409.dkr.ecr.eu-central-1.amazonaws.com/locust-tester:v0.0.3
+      container_name: init-downloader
+      env_file: .env
       volumes:
-        - ./:/mnt/locust
-      command: -f /mnt/locust/locustfile.py --worker --master-host ${dependency.master-host.outputs.ec2_instance.private_ip}
+        - locust-scripts:/locust-data
+      command: >
+        sh -c "
+          echo 'Logging into ECR...'
+          aws ecr get-login-password --region $AWS_REGION | oras login --username AWS --password-stdin $ECR_REGISTRY &&
+          echo 'Pulling artifact...'
+          oras pull $ECR_REGISTRY/$ARTIFACT_REPO:$ARTIFACT_TAG &&
+          echo 'Unpacking...'
+          tar -xzf locust-tests.tar.gz -C /locust-data &&
+          echo 'Done!'
+        "
+      worker:
+        image: 563149050409.dkr.ecr.eu-central-1.amazonaws.com/locust-perftester:latest
+        restart: unless-stopped
+        deploy:
+          replicas: 2
+        volumes:
+          - locust-scripts:/mnt/locust
+        command: -f /mnt/locust/locustfile.py --worker --master-host ${dependency.master-host.outputs.ec2_instance.private_ip}
+        depends_on:
+          init-downloader:
+            condition: service_completed_successfully
+
+  volumes:
+    locust-scripts: # Ephemeral volume
   EOF
 
   docker compose up -d

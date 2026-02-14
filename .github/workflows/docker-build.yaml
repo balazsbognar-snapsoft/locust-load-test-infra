@@ -11,13 +11,17 @@ on:
         description: "Image version tag (falls back to commit SHA if empty)"
         type: string
         default: ""
+      build_init_image:
+        description: "Whether to build Dockerfile.init (e.g. when only that file changed)"
+        type: boolean
+        default: false
 
 env:
+  BUILD_PLATFORMS: 'linux/amd64,linux/arm64'
   AWS_REGION: eu-central-1
   AWS_ECR_REPOSITORY: locust-perftester
+  AWS_ECR_REPOSITORY_INIT: locust-perftester-init
   AWS_ROLE_TO_ASSUME: arn:aws:iam::563149050409:role/snapsoft-locust-dev-github-actions-iam-role
-  PYTHON_VERSION: 3.13.12
-  ORAS_CLI_VERSION: 1.3.0
 
 jobs:
   docker-build:
@@ -71,13 +75,38 @@ jobs:
             echo "EOF" >> $GITHUB_OUTPUT
           fi
 
+      - name: Set init image tags
+        if: ${{ inputs.build_init_image }}
+        id: tags-init
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          if [ "${{ inputs.push_image }}" = "true" ]; then
+            ECR_URI="${{ steps.login-ecr.outputs.registry }}/${{ env.AWS_ECR_REPOSITORY_INIT }}"
+            echo "tags<<EOF" >> $GITHUB_OUTPUT
+            echo "$ECR_URI:$VERSION" >> $GITHUB_OUTPUT
+            echo "$ECR_URI:latest" >> $GITHUB_OUTPUT
+            echo "EOF" >> $GITHUB_OUTPUT
+          else
+            echo "tags<<EOF" >> $GITHUB_OUTPUT
+            echo "${{ env.AWS_ECR_REPOSITORY_INIT }}:$VERSION" >> $GITHUB_OUTPUT
+            echo "EOF" >> $GITHUB_OUTPUT
+          fi
+
       - name: Build and push Docker image
         uses: docker/build-push-action@v6
         with:
           context: .
           file: Dockerfile
-          platforms: ${{ inputs.push_image && 'linux/amd64,linux/arm64' || 'linux/amd64' }}
+          platforms: ${{ env.BUILD_PLATFORMS }}
           push: ${{ inputs.push_image }}
           tags: ${{ steps.tags.outputs.tags }}
-          build-args: |
-            PYTHON_VERSION=${{ env.PYTHON_VERSION }}
+
+      - name: Build and push init Docker image
+        if: ${{ inputs.build_init_image }}
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: Dockerfile.init
+          platforms: ${{ env.BUILD_PLATFORMS }}
+          push: ${{ inputs.push_image }}
+          tags: ${{ steps.tags-init.outputs.tags }}

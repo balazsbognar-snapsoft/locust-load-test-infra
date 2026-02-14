@@ -8,11 +8,31 @@ on:
       - "**"
 
 jobs:
+  detect-changes:
+    if: github.actor != 'locust-load-test-infra[bot]'
+    runs-on: ubuntu-latest
+    outputs:
+      init: ${{ steps.filter.outputs.init }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Detect changed files
+        id: filter
+        uses: dorny/paths-filter@v3
+        with:
+          filters: |
+            init:
+              - "Dockerfile.init"
+
   build:
     if: github.actor != 'locust-load-test-infra[bot]'
+    needs: detect-changes
     uses: ./.github/workflows/docker-build.yaml
     with:
       push_image: false
+      build_init_image: ${{ needs.detect-changes.outputs.init }}
     permissions:
       contents: read
 

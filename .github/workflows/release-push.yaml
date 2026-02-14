@@ -6,11 +6,30 @@ on:
       - "v*"
 
 jobs:
+  detect-changes:
+    runs-on: ubuntu-latest
+    outputs:
+      init: ${{ steps.filter.outputs.init }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Detect changed files
+        id: filter
+        uses: dorny/paths-filter@v3
+        with:
+          filters: |
+            init:
+              - "Dockerfile.init"
+
   build-and-push:
+    needs: detect-changes
     uses: ./.github/workflows/docker-build.yaml
     with:
       push_image: true
       image_version: ${{ github.ref_name }}
+      build_init_image: ${{ needs.detect-changes.outputs.init }}
     permissions:
       contents: read
       id-token: write
