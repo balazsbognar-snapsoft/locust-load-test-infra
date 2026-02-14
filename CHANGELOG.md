@@ -1,3 +1,9 @@
+## [1.0.6](https://github.com/balazsbognar-snapsoft/locust-load-test-infra/compare/v1.0.5...v1.0.6) (2026-02-14)
+
+### 🛠 Bug Fixes 🛠
+
+* remove manifest steps ([057cdc9](https://github.com/balazsbognar-snapsoft/locust-load-test-infra/commit/057cdc972dccc4a2336f28c8e6e1c6fcd935ce21))
+
 ## [1.0.5](https://github.com/balazsbognar-snapsoft/locust-load-test-infra/compare/v1.0.4...v1.0.5) (2026-02-13)
 
 ### 🛠 Bug Fixes 🛠
