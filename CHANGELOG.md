@@ -1,3 +1,9 @@
+## [1.0.7](https://github.com/balazsbognar-snapsoft/locust-load-test-infra/compare/v1.0.6...v1.0.7) (2026-02-14)
+
+### 🛠 Bug Fixes 🛠
+
+* correct image tag issue ([374b883](https://github.com/balazsbognar-snapsoft/locust-load-test-infra/commit/374b8836454c19ed64f53ea687180f166135cf03))
+
 ## [1.0.6](https://github.com/balazsbognar-snapsoft/locust-load-test-infra/compare/v1.0.5...v1.0.6) (2026-02-14)
 
 ### 🛠 Bug Fixes 🛠
